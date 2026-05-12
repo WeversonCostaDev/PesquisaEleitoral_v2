@@ -9,6 +9,7 @@ namespace PesquisaEleitoral_v2.DTOs.Mapping
             return new Pesquisa
             {
                 Nome = pesquiasDto.Nome,
+                Localidade = pesquiasDto.Localidade,
                 Descricao = pesquiasDto.Descricao,
                 Cargo = pesquiasDto.Cargo,
                 DataCriacao = pesquiasDto.DataCriacao
@@ -20,6 +21,7 @@ namespace PesquisaEleitoral_v2.DTOs.Mapping
             {
                 PesquisaId = pesquisa.PesquisaId,
                 Nome = pesquisa.Nome,
+                Localidade = pesquisa.Localidade,
                 Descricao = pesquisa.Descricao,
                 Cargo = pesquisa.Cargo,
                 DataCriacao = pesquisa.DataCriacao,

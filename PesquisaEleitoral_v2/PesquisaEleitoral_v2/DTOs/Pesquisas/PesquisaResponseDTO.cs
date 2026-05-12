@@ -7,6 +7,7 @@ namespace PesquisaEleitoral_v2.DTOs.Pesquisas
     {
         public int PesquisaId { get; set; }
         public string Nome { get; set; } = string.Empty;
+        public string Localidade { get; set; } = string.Empty;
         public string Descricao { get; set; } = string.Empty;
         public Cargo Cargo { get; set; }
         public DateTime DataCriacao { get; set; } = DateTime.Now;

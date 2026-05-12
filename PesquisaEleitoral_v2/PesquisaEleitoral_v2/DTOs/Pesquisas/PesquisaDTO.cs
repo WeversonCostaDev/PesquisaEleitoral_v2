@@ -8,6 +8,10 @@ namespace PesquisaEleitoral_v2.DTOs.Pesquisas
         [Required(ErrorMessage="Informe o nome.")]
         [StringLength(100, ErrorMessage ="Informe no máximo até 100 caracteres.")]
         public string Nome { get; set; } = string.Empty;
+        [Required]
+        [StringLength(100, ErrorMessage = "Informe a localidade.")]
+        public string Localidade { get; set; } = string.Empty;
+
         [StringLength(300, ErrorMessage = "Informe no máximo até 300 caracteres.")]
         public string Descricao { get; set; } = string.Empty;
         [Required(ErrorMessage = "Informe o cargo")]

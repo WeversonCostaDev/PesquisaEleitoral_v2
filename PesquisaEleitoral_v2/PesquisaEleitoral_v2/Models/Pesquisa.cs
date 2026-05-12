@@ -9,6 +9,9 @@ namespace PesquisaEleitoral_v2.Models
         [Required]
         [StringLength(100)]
         public string Nome { get; set; } = string.Empty;
+        [Required]
+        [StringLength(100)]
+        public string Localidade { get; set; } = string.Empty;
         public string Descricao { get; set; } = string.Empty;
         [Required]
         public Cargo Cargo { get; set; }
