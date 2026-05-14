@@ -34,7 +34,8 @@ namespace PesquisaEleitoral_v2.DTOs.Mapping
             candidato.Numero = candidatoPutDto.Numero;
         }
 
-        public static IEnumerable<CandidatoResponseDTO> ToCandidatosResponseDTOList(this IEnumerable<Candidato> candidatos)
+        public static IEnumerable<CandidatoResponseDTO> ToCandidatosResponseDTOList(
+            this IEnumerable<Candidato> candidatos)
         {
             return candidatos.Select(c => c.ToCandidatoResponseDTO());
         }

@@ -25,6 +25,7 @@ namespace PesquisaEleitoral_v2.DTOs.Mapping
                 Descricao = pesquisa.Descricao,
                 Cargo = pesquisa.Cargo,
                 DataCriacao = pesquisa.DataCriacao,
+                Candidatos = pesquisa.Candidatos.ToCandidatosResponseDTOList(),
             };
         }
 

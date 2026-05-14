@@ -1,16 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PesquisaEleitoral_v2.DTOs.Eleitores;
 using PesquisaEleitoral_v2.DTOs.Mapping;
-using PesquisaEleitoral_v2.Repositories;
+using PesquisaEleitoral_v2.Repositories.Interfaces;
 
 namespace PesquisaEleitoral_v2.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class EleitorController : ControllerBase
+    public class EleitoresController : ControllerBase
     {
         private readonly IUnitOfWork _uow;
-        public EleitorController(IUnitOfWork uow) 
+        public EleitoresController(IUnitOfWork uow) 
         {
             _uow = uow;
         }

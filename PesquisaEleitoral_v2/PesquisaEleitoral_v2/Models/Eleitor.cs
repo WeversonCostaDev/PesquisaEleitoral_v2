@@ -1,4 +1,5 @@
-﻿using PesquisaEleitoral_v2.Enums;
+﻿using Microsoft.EntityFrameworkCore;
+using PesquisaEleitoral_v2.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace PesquisaEleitoral_v2.Models
@@ -9,6 +10,7 @@ namespace PesquisaEleitoral_v2.Models
         [Required]
         [StringLength(40)]
         public string Nome { get; set; } = string.Empty;
+        [Precision(10,2)]
         public decimal Renda { get; set; }
         [Required]
         [Range(16,120)]
@@ -18,6 +20,6 @@ namespace PesquisaEleitoral_v2.Models
         [Required]
         public Regiao Regiao { get; set; }
         public Escolaridade Escolaridade { get; set; }
-        public ICollection<IntencaoDeVoto>? IntencoesDeVoto { get; set; }
+        public ICollection<IntencaoDeVoto> IntencoesDeVoto { get; set; } = [];
     }
 }

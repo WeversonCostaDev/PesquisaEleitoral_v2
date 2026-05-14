@@ -13,6 +13,6 @@ namespace PesquisaEleitoral_v2.Models
         public string Partido { get; set; } = string.Empty;
         [Required]
         public int Numero { get; set; }
-        public ICollection<IntencaoDeVoto>? IntencoesDeVoto { get; set; }
+        public ICollection<Pesquisa> PesquisaCandidatos { get; set; } = [];
     }
 }

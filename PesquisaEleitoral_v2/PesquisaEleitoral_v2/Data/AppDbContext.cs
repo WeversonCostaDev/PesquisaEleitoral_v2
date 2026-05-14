@@ -13,14 +13,7 @@ namespace PesquisaEleitoral_v2.Data
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
         }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<IntencaoDeVoto>()
-                .HasIndex(iv => new { iv.EleitorId, iv.PesquisaId })
-                .IsUnique();
-
-            base.OnModelCreating(modelBuilder);
-        }
     }
+
+
 }

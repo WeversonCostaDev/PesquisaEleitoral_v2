@@ -1,19 +1,17 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PesquisaEleitoral_v2.DTOs.Candidatos;
 using PesquisaEleitoral_v2.DTOs.Mapping;
-using PesquisaEleitoral_v2.Repositories;
+using PesquisaEleitoral_v2.Repositories.Interfaces;
 
 namespace PesquisaEleitoral_v2.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CandidatoController : ControllerBase
+    public class CandidatosController : ControllerBase
     {
-        private readonly ICandidatoRepository _candidatoRepository;
         private readonly IUnitOfWork _uow;
-        public CandidatoController(ICandidatoRepository candidatoRepository, IUnitOfWork uow)
+        public CandidatosController(IUnitOfWork uow)
         {
-            _candidatoRepository = candidatoRepository;
             _uow = uow;
         }
 
@@ -61,7 +59,7 @@ namespace PesquisaEleitoral_v2.Controllers
         [HttpDelete]
         public async Task<ActionResult> Delete(int id)
         {
-            var eleitor = await _candidatoRepository.GetByIdAsync(id);
+            var eleitor = await _uow.CandidatoRepository.GetByIdAsync(id);
             if (eleitor is null) return NotFound($"Eleitor de id {id} não encontrado!");
 
             _uow.CandidatoRepository.Delete(eleitor);

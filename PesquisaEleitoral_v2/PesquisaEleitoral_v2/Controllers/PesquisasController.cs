@@ -1,17 +1,17 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PesquisaEleitoral_v2.DTOs.Mapping;
 using PesquisaEleitoral_v2.DTOs.Pesquisas;
-using PesquisaEleitoral_v2.Repositories;
+using PesquisaEleitoral_v2.Repositories.Interfaces;
 
 namespace PesquisaEleitoral_v2.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PesquisaController : ControllerBase
+    public class PesquisasController : ControllerBase
     {
         private readonly IUnitOfWork _uow;
         
-        public PesquisaController(IUnitOfWork uow)
+        public PesquisasController(IUnitOfWork uow)
         {
             _uow= uow;
         }
@@ -28,6 +28,7 @@ namespace PesquisaEleitoral_v2.Controllers
             return Ok(response);
         }
 
+        //Cria uma pesquisa
         [HttpPost()]
         public async Task<ActionResult> Post(PesquisaDTO pesquisaDto)
         {

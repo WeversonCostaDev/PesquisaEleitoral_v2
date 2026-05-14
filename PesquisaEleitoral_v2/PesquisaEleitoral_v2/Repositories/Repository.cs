@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PesquisaEleitoral_v2.Data;
+using PesquisaEleitoral_v2.Repositories.Interfaces;
+using System.Linq.Expressions;
 
 namespace PesquisaEleitoral_v2.Repositories
 {
@@ -25,6 +27,11 @@ namespace PesquisaEleitoral_v2.Repositories
         public void Delete(T entity)
         {
             _context.Set<T>().Remove(entity);
+        }
+
+        public async Task<bool> VerifyAsync(Expression<Func<T,bool>> predicate)
+        {
+            return await _context.Set<T>().AnyAsync(predicate);
         }
     }
 }

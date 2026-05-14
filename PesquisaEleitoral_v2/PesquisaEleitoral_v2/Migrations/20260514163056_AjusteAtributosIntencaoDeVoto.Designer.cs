@@ -12,8 +12,8 @@ using PesquisaEleitoral_v2.Data;
 namespace PesquisaEleitoral_v2.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260512155923_IniticalMigration")]
-    partial class IniticalMigration
+    [Migration("20260514163056_AjusteAtributosIntencaoDeVoto")]
+    partial class AjusteAtributosIntencaoDeVoto
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,21 @@ namespace PesquisaEleitoral_v2.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
+
+            modelBuilder.Entity("CandidatoPesquisa", b =>
+                {
+                    b.Property<int>("CandidatosCandidatoId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PesquisaCandidatosPesquisaId")
+                        .HasColumnType("int");
+
+                    b.HasKey("CandidatosCandidatoId", "PesquisaCandidatosPesquisaId");
+
+                    b.HasIndex("PesquisaCandidatosPesquisaId");
+
+                    b.ToTable("CandidatoPesquisa");
+                });
 
             modelBuilder.Entity("PesquisaEleitoral_v2.Models.Candidato", b =>
                 {
@@ -74,7 +89,8 @@ namespace PesquisaEleitoral_v2.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Renda")
-                        .HasColumnType("decimal(65,30)");
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
 
                     b.Property<int>("Sexo")
                         .HasColumnType("int");
@@ -108,10 +124,9 @@ namespace PesquisaEleitoral_v2.Migrations
 
                     b.HasIndex("CandidatoId");
 
-                    b.HasIndex("PesquisaId");
+                    b.HasIndex("EleitorId");
 
-                    b.HasIndex("EleitorId", "PesquisaId")
-                        .IsUnique();
+                    b.HasIndex("PesquisaId");
 
                     b.ToTable("IntencoesDeVoto");
                 });
@@ -130,6 +145,15 @@ namespace PesquisaEleitoral_v2.Migrations
                     b.Property<DateTime>("DataCriacao")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Localidade")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -140,10 +164,25 @@ namespace PesquisaEleitoral_v2.Migrations
                     b.ToTable("Pesquisas");
                 });
 
+            modelBuilder.Entity("CandidatoPesquisa", b =>
+                {
+                    b.HasOne("PesquisaEleitoral_v2.Models.Candidato", null)
+                        .WithMany()
+                        .HasForeignKey("CandidatosCandidatoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PesquisaEleitoral_v2.Models.Pesquisa", null)
+                        .WithMany()
+                        .HasForeignKey("PesquisaCandidatosPesquisaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("PesquisaEleitoral_v2.Models.IntencaoDeVoto", b =>
                 {
                     b.HasOne("PesquisaEleitoral_v2.Models.Candidato", "Candidato")
-                        .WithMany("IntencoesDeVoto")
+                        .WithMany()
                         .HasForeignKey("CandidatoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -155,7 +194,7 @@ namespace PesquisaEleitoral_v2.Migrations
                         .IsRequired();
 
                     b.HasOne("PesquisaEleitoral_v2.Models.Pesquisa", "Pesquisa")
-                        .WithMany("IntencoesDeVoto")
+                        .WithMany()
                         .HasForeignKey("PesquisaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -167,17 +206,7 @@ namespace PesquisaEleitoral_v2.Migrations
                     b.Navigation("Pesquisa");
                 });
 
-            modelBuilder.Entity("PesquisaEleitoral_v2.Models.Candidato", b =>
-                {
-                    b.Navigation("IntencoesDeVoto");
-                });
-
             modelBuilder.Entity("PesquisaEleitoral_v2.Models.Eleitor", b =>
-                {
-                    b.Navigation("IntencoesDeVoto");
-                });
-
-            modelBuilder.Entity("PesquisaEleitoral_v2.Models.Pesquisa", b =>
                 {
                     b.Navigation("IntencoesDeVoto");
                 });

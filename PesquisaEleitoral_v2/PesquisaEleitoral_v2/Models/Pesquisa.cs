@@ -17,6 +17,6 @@ namespace PesquisaEleitoral_v2.Models
         public Cargo Cargo { get; set; }
         [Required]
         public DateTime DataCriacao { get; set; }
-        public ICollection<IntencaoDeVoto>? IntencoesDeVoto { get; set; }
+        public ICollection<Candidato> Candidatos { get; set; } = [];
     }
 }
