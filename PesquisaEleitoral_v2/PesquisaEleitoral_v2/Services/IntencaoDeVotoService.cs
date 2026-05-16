@@ -1,21 +1,96 @@
 ﻿using PesquisaEleitoral_v2.Controllers;
+using PesquisaEleitoral_v2.DTOs.Estatiscas;
 using PesquisaEleitoral_v2.DTOs.IntencoesDeVoto;
 using PesquisaEleitoral_v2.DTOs.Mapping;
+using PesquisaEleitoral_v2.Enums;
+using PesquisaEleitoral_v2.Models;
+using PesquisaEleitoral_v2.Pagination;
 using PesquisaEleitoral_v2.Repositories.Interfaces;
+using System.ComponentModel;
 
 namespace PesquisaEleitoral_v2.Services
 {
-    public class IntencaoDeVotoService
+    public class IntencaoDeVotoService : IIntencaoDeVotoService
     {
         private readonly IUnitOfWork _uow;
         public IntencaoDeVotoService(IUnitOfWork uow)
         {
             _uow = uow;
         }
+        public async Task<IPagedList<IntencaoDeVotoResponseDTO>> GetPagedAsync(
+            IQueryStringPagination query, int pesquisaId)
+        {   
 
-        public async Task<IntencaoDeVotoResponseDTO> GetByIdAsync(int id, int pesquisaId)
+            var list = await _uow.IntencaoDeVotoRepository.GetPagedAsync(query, pesquisaId);
+
+            var dtoList = list
+                .Select(i => i.ToIntencaoDeVotoResponseDTO())
+                .ToList();
+
+            return new PagedList<IntencaoDeVotoResponseDTO>(list.TotalPage, list.CurrentPage, dtoList);
+        }
+        public async Task<PerfilEleitoresDTO> GetPerfilEleitores(int pesquisaId, int candidatoId)
+        {   
+            var pesquisa = await  _uow.PesquisaRepository.GetByIdAsync(pesquisaId)
+                ?? throw new KeyNotFoundException($"Pesquisa de id {pesquisaId} não encontrada."); ;
+
+            var candidato = pesquisa.Candidatos.FirstOrDefault(c => c.CandidatoId == candidatoId)
+                ?? throw new KeyNotFoundException($"Candidato de id {candidatoId} não encontrado.");
+
+            int totalGeral = await _uow.IntencaoDeVotoRepository
+                .GetTotalDeVotosPesquisaAsync(pesquisaId);
+
+            var estatisticas = await _uow.IntencaoDeVotoRepository.GetEstatisticaAsync(
+                pesquisa.PesquisaId, candidato.CandidatoId);
+
+            var escolaridade = await _uow.IntencaoDeVotoRepository.GetDistribuicaoEscolaridadeAsync(
+                pesquisa.PesquisaId, candidato.CandidatoId);
+
+            var sexo = await _uow.IntencaoDeVotoRepository.GetDistribuicaoSexoAsync(
+                pesquisa.PesquisaId, candidato.CandidatoId);
+
+            //Calcula a porcentagem de votos
+            decimal porcentagemVotos = CalculaPorcentagem(estatisticas.ContagemVotos, totalGeral);
+
+            //Converte a lista de contagem de votos por escolaridade, para um dicionário com a porcentagem como valor. 
+            decimal totalEscolaridade = escolaridade.Sum(obj => obj.Total);
+            Dictionary<Escolaridade, decimal> dictEscolaridade = escolaridade.ToDictionary(
+                item => item.Escolaridade,
+                item => totalEscolaridade = CalculaPorcentagem(item.Total, totalEscolaridade));
+
+            //Converte a lista com contagem de votos por sexo, para um dicionário com a porcentagem como valor.
+            decimal totalSexo = sexo.Sum(obj => obj.Total);
+            Dictionary<Sexo, decimal> dictSexo = sexo.ToDictionary(
+                item => item.Sexo,
+                item => CalculaPorcentagem(item.Total, totalSexo));
+
+            var dictFaixaEtaria = CalculaDistribuicao<int, FaixaEtaria>
+              (estatisticas.FaixasEtarias, IdentificaFaixaEtaria, estatisticas.ContagemVotos);
+
+            var dictClasseSocial = CalculaDistribuicao<decimal, ClasseSocial>
+                (estatisticas.Rendas, IdentificaClasseSocial, estatisticas.ContagemVotos);
+
+            var result = new PerfilEleitoresDTO
+            {
+                CandidatoId = candidatoId,
+                Nome = candidato.Nome,
+                TotalVotos = estatisticas.ContagemVotos,
+                PorcentagemVotos = porcentagemVotos,
+                DistribuicaoFaixaEtaria = dictFaixaEtaria,
+                DistribuicaoRenda = dictClasseSocial,
+                DistribuicaoEscolaridade = dictEscolaridade,
+                DistribuicaoSexo = dictSexo
+            };
+            return result;
+        }
+        public async Task<IEnumerable<EstatisticaVotoResponseDTO>> EstatisticaPorCandidatoAsync(
+            int pesquisaId, Regiao? regiao = null)
         {
-            var intencaoDeVoto = await _uow.IntencaoDeVotoRepository.GetByIdAsync(id, pesquisaId)
+            return await _uow.IntencaoDeVotoRepository.GetEstatisticaPorCandidatoAsync(pesquisaId, regiao);
+        }
+        public async Task<IntencaoDeVotoResponseDTO> GetByIdAsync(int pesquisaId, int votoId)
+        {
+            var intencaoDeVoto = await _uow.IntencaoDeVotoRepository.GetByIdAsync(pesquisaId, votoId)
                 ?? throw new KeyNotFoundException("Intenção de voto não encontrada.");
 
             var intencoesDeVotoDto = intencaoDeVoto.ToIntencaoDeVotoResponseDTO();
@@ -24,39 +99,71 @@ namespace PesquisaEleitoral_v2.Services
         public async Task<IntencaoDeVotoResponseDTO> CreateAsync(IntencaoDeVotoDTO votoDto)
         {
             var verifyEleitor = await _uow.EleitorRepository
-                .VerifyAsync(e => e.EleitorId == votoDto.EleitorId);
+                .GetByIdAsync(votoDto.EleitorId);
 
-            if (!verifyEleitor)
-                throw new KeyNotFoundException("Eleitor não existe.");
+            if (verifyEleitor is null)
+                throw new KeyNotFoundException($"Não há registro de eleitor de id {votoDto.EleitorId}.");
 
             var verifyPesquisa = await _uow.PesquisaRepository.GetByIdAsync(votoDto.PesquisaId);
             if (verifyPesquisa is null)
-                throw new KeyNotFoundException("Pesquisa não existe.");
+                throw new KeyNotFoundException($"Não há registro de pesquisa de id {votoDto.PesquisaId}.");
 
             var verifyCandidato = verifyPesquisa.Candidatos.FirstOrDefault(c => c.CandidatoId == votoDto.CandidatoId);
 
             if (verifyCandidato is null)
-                throw new KeyNotFoundException("Candidato não existe.");
+                throw new KeyNotFoundException($"Não há registro de candidato de id {votoDto.CandidatoId} " +
+                    $"nessa pesquisa");
 
             var verifyVotoEleitor = await _uow.IntencaoDeVotoRepository
-                .JaVotouAsync(votoDto.EleitorId);
+                .JaVotouAsync(votoDto.EleitorId, votoDto.PesquisaId);
 
             if (verifyVotoEleitor)
-                throw new InvalidOperationException("Eleitor já votou .");
+                throw new InvalidOperationException("Não foi possível registrar o voto," +
+                    " pois este eleitor já possui voto registrado nessa pesquisa.");
 
-            var intencao = votoDto.ToIntencaoDeVoto();
-            intencao = _uow.IntencaoDeVotoRepository.Create(intencao);
+            var voto = votoDto.ToIntencaoDeVoto();
+            voto = _uow.IntencaoDeVotoRepository.Create(voto);
             await _uow.CommitAsync();
 
-            intencao = await _uow.IntencaoDeVotoRepository
-                .GetByIdAsync(intencao.IntencaoDeVotoId);
+            voto = await _uow.IntencaoDeVotoRepository
+                .GetByIdAsync(voto.IntencaoDeVotoId, voto.PesquisaId);
 
-            if (intencao is null) throw new KeyNotFoundException("Erro ao recuperar a intenção de voto");
+            if (voto is null) throw new KeyNotFoundException("Erro ao recuperar a intenção de voto");
 
-            var intencaoResponseDto = intencao.ToIntencaoDeVotoResponseDTO();
+            var intencaoResponseDto = voto.ToIntencaoDeVotoResponseDTO();
 
             return intencaoResponseDto;
         }
-
+        private ClasseSocial IdentificaClasseSocial(decimal renda)
+        {
+            return renda switch
+            {
+                <= 2000 => ClasseSocial.Baixa,
+                <= 10000 => ClasseSocial.Media,
+                _ => ClasseSocial.Alta,
+            };
+        }
+        private FaixaEtaria IdentificaFaixaEtaria(int idade)
+        {
+            return idade switch
+            {
+                >= 16 and <= 29 => FaixaEtaria.Jovem,
+                > 29 and <= 59 => FaixaEtaria.Adulto,
+                _ => FaixaEtaria.Idoso,
+            };
+        }
+        private Dictionary<TEnum, decimal> CalculaDistribuicao<T, TEnum>
+            (IEnumerable<T> lista, Func<T, TEnum> func, int total)
+            where TEnum : notnull
+        {
+            return lista
+                 .Select(i => func(i))
+                 .GroupBy(i => i)
+                 .ToDictionary(g => g.Key, g => CalculaPorcentagem(g.Count(), total));
+        }
+        private decimal CalculaPorcentagem(int total, decimal totalGeral)
+        {
+            return total == 0 ? 0 : 100 * (total / (decimal)totalGeral);
+        }
     }
 }

@@ -13,7 +13,9 @@ namespace PesquisaEleitoral_v2.DTOs.Candidatos
         [StringLength(6, ErrorMessage ="Informe no máximo 6 letras.")]
         public string Partido { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Informe o nome.")]
+        [Required(ErrorMessage = "Informe o numero.")]
+        [Range(10,int.MaxValue, ErrorMessage = "O número deve ter pelo menos 2 algarísmos," +
+            " e nao pode ser negativo.")]
         public int Numero { get; set; }
     }
 }

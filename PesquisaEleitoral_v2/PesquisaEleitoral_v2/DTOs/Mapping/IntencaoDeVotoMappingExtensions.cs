@@ -26,5 +26,6 @@ namespace PesquisaEleitoral_v2.DTOs.Mapping
                 DataRegistro = intencaoDeVoto.DataRegistro
             };
         }
+
     }
 }

@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace PesquisaEleitoral_v2.Migrations
 {
     /// <inheritdoc />
-    public partial class ModelagemBancoDeDados : Migration
+    public partial class CriandoBanco : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -63,7 +63,7 @@ namespace PesquisaEleitoral_v2.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Localidade = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Descricao = table.Column<string>(type: "longtext", nullable: true)
+                    Descricao = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Cargo = table.Column<int>(type: "int", nullable: false),
                     DataCriacao = table.Column<DateTime>(type: "datetime(6)", nullable: false)
@@ -75,26 +75,24 @@ namespace PesquisaEleitoral_v2.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "PesquisaCandidatos",
+                name: "CandidatoPesquisa",
                 columns: table => new
                 {
-                    PesquisaCandidatoId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    PesquisaId = table.Column<int>(type: "int", nullable: false),
-                    CandidatoId = table.Column<int>(type: "int", nullable: false)
+                    CandidatosCandidatoId = table.Column<int>(type: "int", nullable: false),
+                    PesquisaCandidatosPesquisaId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PesquisaCandidatos", x => x.PesquisaCandidatoId);
+                    table.PrimaryKey("PK_CandidatoPesquisa", x => new { x.CandidatosCandidatoId, x.PesquisaCandidatosPesquisaId });
                     table.ForeignKey(
-                        name: "FK_PesquisaCandidatos_Candidatos_CandidatoId",
-                        column: x => x.CandidatoId,
+                        name: "FK_CandidatoPesquisa_Candidatos_CandidatosCandidatoId",
+                        column: x => x.CandidatosCandidatoId,
                         principalTable: "Candidatos",
                         principalColumn: "CandidatoId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_PesquisaCandidatos_Pesquisas_PesquisaId",
-                        column: x => x.PesquisaId,
+                        name: "FK_CandidatoPesquisa_Pesquisas_PesquisaCandidatosPesquisaId",
+                        column: x => x.PesquisaCandidatosPesquisaId,
                         principalTable: "Pesquisas",
                         principalColumn: "PesquisaId",
                         onDelete: ReferentialAction.Cascade);
@@ -108,12 +106,19 @@ namespace PesquisaEleitoral_v2.Migrations
                     IntencaoDeVotoId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     EleitorId = table.Column<int>(type: "int", nullable: false),
-                    PesquisaCandidatoId = table.Column<int>(type: "int", nullable: false),
+                    CandidatoId = table.Column<int>(type: "int", nullable: false),
+                    PesquisaId = table.Column<int>(type: "int", nullable: false),
                     DataRegistro = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_IntencoesDeVoto", x => x.IntencaoDeVotoId);
+                    table.ForeignKey(
+                        name: "FK_IntencoesDeVoto_Candidatos_CandidatoId",
+                        column: x => x.CandidatoId,
+                        principalTable: "Candidatos",
+                        principalColumn: "CandidatoId",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_IntencoesDeVoto_Eleitores_EleitorId",
                         column: x => x.EleitorId,
@@ -121,13 +126,23 @@ namespace PesquisaEleitoral_v2.Migrations
                         principalColumn: "EleitorId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_IntencoesDeVoto_PesquisaCandidatos_PesquisaCandidatoId",
-                        column: x => x.PesquisaCandidatoId,
-                        principalTable: "PesquisaCandidatos",
-                        principalColumn: "PesquisaCandidatoId",
+                        name: "FK_IntencoesDeVoto_Pesquisas_PesquisaId",
+                        column: x => x.PesquisaId,
+                        principalTable: "Pesquisas",
+                        principalColumn: "PesquisaId",
                         onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CandidatoPesquisa_PesquisaCandidatosPesquisaId",
+                table: "CandidatoPesquisa",
+                column: "PesquisaCandidatosPesquisaId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IntencoesDeVoto_CandidatoId",
+                table: "IntencoesDeVoto",
+                column: "CandidatoId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_IntencoesDeVoto_EleitorId",
@@ -135,18 +150,8 @@ namespace PesquisaEleitoral_v2.Migrations
                 column: "EleitorId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_IntencoesDeVoto_PesquisaCandidatoId",
+                name: "IX_IntencoesDeVoto_PesquisaId",
                 table: "IntencoesDeVoto",
-                column: "PesquisaCandidatoId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PesquisaCandidatos_CandidatoId",
-                table: "PesquisaCandidatos",
-                column: "CandidatoId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PesquisaCandidatos_PesquisaId",
-                table: "PesquisaCandidatos",
                 column: "PesquisaId");
         }
 
@@ -154,16 +159,16 @@ namespace PesquisaEleitoral_v2.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "CandidatoPesquisa");
+
+            migrationBuilder.DropTable(
                 name: "IntencoesDeVoto");
 
             migrationBuilder.DropTable(
-                name: "Eleitores");
-
-            migrationBuilder.DropTable(
-                name: "PesquisaCandidatos");
-
-            migrationBuilder.DropTable(
                 name: "Candidatos");
+
+            migrationBuilder.DropTable(
+                name: "Eleitores");
 
             migrationBuilder.DropTable(
                 name: "Pesquisas");

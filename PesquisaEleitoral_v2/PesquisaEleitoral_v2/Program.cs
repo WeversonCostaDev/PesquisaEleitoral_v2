@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using PesquisaEleitoral_v2.Data;
 using PesquisaEleitoral_v2.Repositories;
 using PesquisaEleitoral_v2.Repositories.Interfaces;
+using PesquisaEleitoral_v2.Services;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,7 +24,7 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<IIntencaoDeVotoRepository, IntencaoDeVotoRepository>();
+builder.Services.AddScoped<IIntencaoDeVotoService, IntencaoDeVotoService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 var app = builder.Build();

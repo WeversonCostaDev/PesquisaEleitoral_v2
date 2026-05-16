@@ -12,8 +12,8 @@ using PesquisaEleitoral_v2.Data;
 namespace PesquisaEleitoral_v2.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260514152659_RemodelandoBanco")]
-    partial class RemodelandoBanco
+    [Migration("20260516140023_CriandoBanco")]
+    partial class CriandoBanco
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -108,7 +108,7 @@ namespace PesquisaEleitoral_v2.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("IntencaoDeVotoId"));
 
-                    b.Property<int>("CandidatoID")
+                    b.Property<int>("CandidatoId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("DataRegistro")
@@ -122,7 +122,7 @@ namespace PesquisaEleitoral_v2.Migrations
 
                     b.HasKey("IntencaoDeVotoId");
 
-                    b.HasIndex("CandidatoID");
+                    b.HasIndex("CandidatoId");
 
                     b.HasIndex("EleitorId");
 
@@ -183,7 +183,7 @@ namespace PesquisaEleitoral_v2.Migrations
                 {
                     b.HasOne("PesquisaEleitoral_v2.Models.Candidato", "Candidato")
                         .WithMany()
-                        .HasForeignKey("CandidatoID")
+                        .HasForeignKey("CandidatoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

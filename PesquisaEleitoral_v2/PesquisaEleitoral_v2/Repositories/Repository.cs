@@ -13,18 +13,18 @@ namespace PesquisaEleitoral_v2.Repositories
             _context = context;
         }
 
-        public async Task<T?> GetByIdAsync(int id)
+        public virtual async Task<T?> GetByIdAsync(int id)
         {
             return await _context
                 .Set<T>()
                 .FindAsync(id);
         }
-        public T Create(T entity)
+        public virtual T Create(T entity)
         {
             _context.Set<T>().Add(entity);
             return entity;
         }
-        public void Delete(T entity)
+        public virtual void Delete(T entity)
         {
             _context.Set<T>().Remove(entity);
         }
