@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PesquisaEleitoral_v2.DTOs.Eleitores;
 using PesquisaEleitoral_v2.DTOs.Mapping;
+using PesquisaEleitoral_v2.Pagination;
 using PesquisaEleitoral_v2.Repositories.Interfaces;
+using System.Text.Json;
 
 namespace PesquisaEleitoral_v2.Controllers
 {
@@ -15,8 +17,28 @@ namespace PesquisaEleitoral_v2.Controllers
             _uow = uow;
         }
 
+        [HttpGet]
+        public async Task<IEnumerable<EleitorResponseDTO>> GetPagedAsync(
+            [FromQuery] EleitorParameters parameters)
+        {
+            var eleitores = await _uow.EleitorRepository.GetPagedAsync(parameters);
+
+            var metadata = new
+            {
+                eleitores.CurrentPage,
+                eleitores.TotalPage,
+                eleitores.HasPrevious,
+                eleitores.HasNext,
+            };
+
+            Response.Headers.Append("Pagination", JsonSerializer.Serialize(metadata));
+
+            var response = eleitores.ToEleitoresResponseDTOList();
+            return response;
+        }
+
         [HttpGet("{id}", Name ="GetEleitorById")]
-        public async Task<ActionResult> GetById(int id)
+        public async Task<ActionResult<EleitorResponseDTO>> GetById(int id)
         {
             var eleitor = await _uow.EleitorRepository.GetByIdAsync(id);
             if(eleitor is null)

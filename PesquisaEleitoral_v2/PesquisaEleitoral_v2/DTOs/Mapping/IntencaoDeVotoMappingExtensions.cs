@@ -27,5 +27,12 @@ namespace PesquisaEleitoral_v2.DTOs.Mapping
             };
         }
 
+        public static void UpdateFromDTO(this IntencaoDeVoto intencao, IntencaoDeVotoUpdateDTO intencaoDeVotoPutDto)
+        {
+            intencao.CandidatoId = intencaoDeVotoPutDto.CandidatoId;
+            intencao.EleitorId = intencaoDeVotoPutDto.EleitorId;
+            intencao.DataRegistro = intencaoDeVotoPutDto.DataRegistro;
+        }
+
     }
 }

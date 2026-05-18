@@ -3,6 +3,6 @@
     public enum Cargo
     {
         Presidente = 1,
-        Governadodr = 2,
+        Governador = 2,
     }
 }

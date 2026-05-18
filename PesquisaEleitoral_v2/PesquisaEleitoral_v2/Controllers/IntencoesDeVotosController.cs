@@ -1,13 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PesquisaEleitoral_v2.DTOs.Estatiscas;
 using PesquisaEleitoral_v2.DTOs.IntencoesDeVoto;
-using PesquisaEleitoral_v2.DTOs.Mapping;
 using PesquisaEleitoral_v2.Enums;
 using PesquisaEleitoral_v2.Pagination;
-using PesquisaEleitoral_v2.Repositories.Interfaces;
 using PesquisaEleitoral_v2.Services;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace PesquisaEleitoral_v2.Controllers
 {
@@ -16,12 +13,10 @@ namespace PesquisaEleitoral_v2.Controllers
     public class IntencoesDeVotosController : ControllerBase
     {
         private readonly IIntencaoDeVotoService _intencaoDeVotoService;
-        private readonly IUnitOfWork _uow;
 
-        public IntencoesDeVotosController(IIntencaoDeVotoService intencaoDeVotoService, IUnitOfWork uow)
+        public IntencoesDeVotosController(IIntencaoDeVotoService intencaoDeVotoService)
         {
             _intencaoDeVotoService = intencaoDeVotoService;
-            _uow = uow;
         }
         [HttpGet]
         public async Task<ActionResult<IEnumerable<IntencaoDeVotoResponseDTO>>> GetPagedAsync(
@@ -55,12 +50,13 @@ namespace PesquisaEleitoral_v2.Controllers
             return Ok(perfil);
         }
 
-        [HttpGet("{votoId}", Name ="GetIntencaoDeVotoById")]
-        public async Task<ActionResult> GetIntencaoDeVotoById(int votoId, [FromQuery] int pesquisaId)
+        [HttpGet("{pesquisaId}/{votoId}", Name ="GetIntencaoDeVotoById")]
+        public async Task<ActionResult> GetIntencaoDeVotoById(int pesquisaId, int votoId)
         {
-            var response = await _intencaoDeVotoService.GetByIdAsync(votoId, pesquisaId);
+            var response = await _intencaoDeVotoService.GetByIdAsync(pesquisaId, votoId);
             return Ok(response);
         }
+        
         [HttpPost]
         public async Task<ActionResult> Post(IntencaoDeVotoDTO votoDto)
         {
@@ -69,10 +65,24 @@ namespace PesquisaEleitoral_v2.Controllers
                 "GetIntencaoDeVotoById",
                 new 
                 {
-                    votoId = response.IntencaoDeVotoId,
-                    pesquisaId = response.Pesquisa.PesquisaId
+                    pesquisaId = response.Pesquisa.PesquisaId,
+                    votoId = response.IntencaoDeVotoId
                 }
                 , response);
+        }
+
+        [HttpPut]
+        public async Task<ActionResult> Put(IntencaoDeVotoUpdateDTO votoDto)
+        {
+            await _intencaoDeVotoService.UpdateAsync(votoDto);
+            return NoContent();
+        }
+
+        [HttpDelete]
+        public async Task<ActionResult> Delete(int pesquisaId, int votoId)
+        {
+            await _intencaoDeVotoService.DeleteAsync(pesquisaId, votoId);
+            return NoContent();
         }
     }
 }

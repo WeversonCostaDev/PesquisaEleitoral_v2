@@ -21,7 +21,7 @@ namespace PesquisaEleitoral_v2.Controllers
         {
             var pesquisa = await _uow.PesquisaRepository.GetByIdAsync(pesquisaId);
             
-            if (pesquisa is null) return NotFound($"Pesquisa de id {pesquisaId}não encontrada.");
+            if (pesquisa is null) return NotFound($"Pesquisa de id {pesquisaId} não encontrada.");
 
             var response = pesquisa.ToPesquisaResponseDTO();
 
@@ -38,7 +38,7 @@ namespace PesquisaEleitoral_v2.Controllers
 
             var response = pesquisa.ToPesquisaResponseDTO();
 
-            return CreatedAtRoute("GetPesquisaById", new {id = response.PesquisaId}, response);
+            return CreatedAtRoute("GetPesquisaById", new {pesquisaId = response.PesquisaId}, response);
         }
         [HttpPost("candidatos")]
         public async Task<ActionResult> Post(PesquisaCandidatoDTO pc)

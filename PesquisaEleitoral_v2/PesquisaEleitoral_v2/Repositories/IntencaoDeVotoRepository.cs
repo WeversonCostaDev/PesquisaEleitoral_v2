@@ -127,15 +127,6 @@ namespace PesquisaEleitoral_v2.Repositories
                 .Where(iv => iv.PesquisaId == pesquisaId)
                 .AnyAsync(iv => iv.EleitorId == eleitorId);
         }
-        public override IntencaoDeVoto Create(IntencaoDeVoto intencao)
-        {
-            _context.Add(intencao);
-            return intencao;
-        }
-        public override void Delete(IntencaoDeVoto voto)
-        {
-            _context.Remove(voto);
-        }
         
     }
 }

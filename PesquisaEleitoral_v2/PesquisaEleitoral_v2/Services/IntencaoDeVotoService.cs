@@ -1,12 +1,9 @@
-﻿using PesquisaEleitoral_v2.Controllers;
-using PesquisaEleitoral_v2.DTOs.Estatiscas;
+﻿using PesquisaEleitoral_v2.DTOs.Estatiscas;
 using PesquisaEleitoral_v2.DTOs.IntencoesDeVoto;
 using PesquisaEleitoral_v2.DTOs.Mapping;
 using PesquisaEleitoral_v2.Enums;
-using PesquisaEleitoral_v2.Models;
 using PesquisaEleitoral_v2.Pagination;
 using PesquisaEleitoral_v2.Repositories.Interfaces;
-using System.ComponentModel;
 
 namespace PesquisaEleitoral_v2.Services
 {
@@ -56,7 +53,7 @@ namespace PesquisaEleitoral_v2.Services
             decimal totalEscolaridade = escolaridade.Sum(obj => obj.Total);
             Dictionary<Escolaridade, decimal> dictEscolaridade = escolaridade.ToDictionary(
                 item => item.Escolaridade,
-                item => totalEscolaridade = CalculaPorcentagem(item.Total, totalEscolaridade));
+                item => CalculaPorcentagem(item.Total, totalEscolaridade));
 
             //Converte a lista com contagem de votos por sexo, para um dicionário com a porcentagem como valor.
             decimal totalSexo = sexo.Sum(obj => obj.Total);
@@ -71,8 +68,8 @@ namespace PesquisaEleitoral_v2.Services
                 (estatisticas.Rendas, IdentificaClasseSocial, estatisticas.ContagemVotos);
 
             var result = new PerfilEleitoresDTO
-            {
-                CandidatoId = candidatoId,
+            {   PesquisaId = pesquisa.PesquisaId,
+                CandidatoId = candidato.CandidatoId,
                 Nome = candidato.Nome,
                 TotalVotos = estatisticas.ContagemVotos,
                 PorcentagemVotos = porcentagemVotos,
@@ -126,13 +123,45 @@ namespace PesquisaEleitoral_v2.Services
             await _uow.CommitAsync();
 
             voto = await _uow.IntencaoDeVotoRepository
-                .GetByIdAsync(voto.IntencaoDeVotoId, voto.PesquisaId);
+                .GetByIdAsync(voto.PesquisaId, voto.IntencaoDeVotoId);
 
             if (voto is null) throw new KeyNotFoundException("Erro ao recuperar a intenção de voto");
 
             var intencaoResponseDto = voto.ToIntencaoDeVotoResponseDTO();
 
             return intencaoResponseDto;
+        }
+        public async Task UpdateAsync(IntencaoDeVotoUpdateDTO votoUpdate)
+        {
+            var pesquisa = await _uow.PesquisaRepository.GetByIdAsync(votoUpdate.PesquisaId)
+                ?? throw new InvalidOperationException($"Não há registro da pesquisa " +
+                $"de id {votoUpdate.PesquisaId}.");
+
+            var candidato = pesquisa.Candidatos
+                .FirstOrDefault(c => c.CandidatoId == votoUpdate.CandidatoId)
+                ?? throw new InvalidOperationException($"Não há registro do candidato " +
+                $"de id {votoUpdate.CandidatoId}.");
+
+            var eleitor = await _uow.EleitorRepository.GetByIdAsync(votoUpdate.EleitorId)
+                ?? throw new InvalidOperationException($"Não há registro do eleitor" +
+                $"de id {votoUpdate.EleitorId}.");
+
+            var voto = await _uow.IntencaoDeVotoRepository.GetByIdAsync(
+                pesquisa.PesquisaId, votoUpdate.IntencaoDeVotoId)
+                ?? throw new InvalidOperationException($"Não há registro da intenção de voto" +
+                $"de id {votoUpdate.IntencaoDeVotoId}.");
+
+            voto.UpdateFromDTO(votoUpdate);
+            await _uow.CommitAsync();
+        }
+        public async Task DeleteAsync(int pesquisaId, int votoId)
+        {
+            var voto = await _uow.IntencaoDeVotoRepository.GetByIdAsync(pesquisaId, votoId)
+                ?? throw new InvalidOperationException($"A intenção de voto de id {votoId} " +
+                $"da pesquisa de id {pesquisaId} não existe.");
+
+            _uow.IntencaoDeVotoRepository.Delete(voto);
+            await _uow.CommitAsync();
         }
         private ClasseSocial IdentificaClasseSocial(decimal renda)
         {
